@@ -1,0 +1,506 @@
+<title>Mavistaki</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: sticky header, split hero (text + square photo slider), bead divider, category tabs over a product grid, small contact block. */
+:root {
+  --bg: #eceff2;
+  --surface: #f8f9fb;
+  --ink: #14243a;
+  --muted: #55627a;
+  --mavi: #2b5aa0;
+  --on-mavi: #ffffff;
+  --gold: #b58a3c;
+  --plum: #6b4a78;
+  --line: #ccd3dc;
+  --shade: rgba(20, 36, 58, .12);
+  --font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --font-body: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1623; --surface: #16212f; --ink: #e9eef4; --muted: #9eabbd;
+    --mavi: #7ba3e6; --on-mavi: #0e1623; --gold: #d6ad5e; --plum: #b99ac8;
+    --line: #28384c; --shade: rgba(0, 0, 0, .45);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1623; --surface: #16212f; --ink: #e9eef4; --muted: #9eabbd;
+  --mavi: #7ba3e6; --on-mavi: #0e1623; --gold: #d6ad5e; --plum: #b99ac8;
+  --line: #28384c; --shade: rgba(0, 0, 0, .45);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 5.5rem; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--font-body); font-size: 1rem; line-height: 1.6;
+  padding-inline: 1rem;
+}
+.wrap { max-width: 72rem; margin-inline: auto; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 500; line-height: 1.1; margin: 0; text-wrap: balance; }
+p { margin: 0; }
+a { color: inherit; }
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 3px solid var(--mavi); outline-offset: 3px; border-radius: 4px; }
+
+/* header */
+.top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
+  margin-inline: -1rem; padding: .7rem 1rem;
+  background: var(--bg); border-bottom: 1px solid var(--line);
+}
+.top .wrap { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .4rem 1.5rem; }
+.mark { font-family: var(--font-display); font-size: 1.45rem; font-weight: 600; text-decoration: none; letter-spacing: -.01em; }
+.mark i { font-style: normal; color: var(--mavi); }
+.nav { display: flex; gap: .25rem; flex-wrap: wrap; }
+.nav button {
+  background: none; border: 0; padding: .35rem .8rem; border-radius: 99px; color: var(--muted); font-weight: 500;
+}
+.nav button:hover { color: var(--ink); background: var(--surface); }
+
+/* hero */
+.hero { display: grid; grid-template-columns: 1fr; gap: 2rem; padding-block: 2.5rem 3rem; align-items: center; }
+@media (min-width: 56rem) { .hero { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 4rem; padding-block: 4rem 4.5rem; } }
+.eyebrow { font-size: .8rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--mavi); }
+.hero h1 { font-size: clamp(2.7rem, 7.5vw, 5rem); letter-spacing: -.025em; margin-top: .9rem; }
+.hero h1 em { font-style: italic; font-weight: 500; color: var(--mavi); }
+.hero .lead { margin-top: 1.4rem; max-width: 30rem; color: var(--muted); font-size: 1.1rem; }
+.actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 2rem; }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  padding: .8rem 1.4rem; border-radius: 99px; border: 1.5px solid var(--mavi);
+  background: var(--mavi); color: var(--on-mavi); font-weight: 600; text-decoration: none; line-height: 1.2;
+}
+.btn:hover { filter: brightness(1.08); }
+.btn.ghost { background: transparent; color: var(--mavi); }
+.btn.ghost:hover { background: var(--surface); filter: none; }
+
+.slider { position: relative; min-width: 0; }
+.frame {
+  position: relative; aspect-ratio: 1 / 1; max-width: 100%; overflow: hidden;
+  border-radius: 1.25rem; background: var(--surface); box-shadow: 0 1.5rem 3rem -1.5rem var(--shade);
+  touch-action: pan-y;
+}
+.slide { position: absolute; inset: 0; opacity: 0; transition: opacity .9s ease; }
+.slide.on { opacity: 1; z-index: 1; }
+.slide img { width: 100%; height: 100%; object-fit: cover; display: block; transform: scale(1.04); transition: transform 6s ease-out; }
+.slide.on img { transform: scale(1); }
+.cap {
+  position: absolute; inset: auto 0 0 0; z-index: 2; padding: 3.5rem 1.2rem 1.1rem;
+  background: linear-gradient(to top, rgba(10, 18, 30, .78), rgba(10, 18, 30, 0));
+  color: #fff; display: flex; align-items: end; justify-content: space-between; gap: 1rem;
+}
+.cap b { display: block; font-family: var(--font-display); font-weight: 500; font-size: 1.35rem; line-height: 1.15; }
+.cap span { font-size: .8rem; letter-spacing: .1em; text-transform: uppercase; opacity: .85; }
+.cap a {
+  flex: none; color: #fff; font-weight: 600; font-size: .9rem; padding: .45rem .95rem;
+  border: 1.5px solid rgba(255, 255, 255, .7); border-radius: 99px; text-decoration: none; background: none; cursor: pointer;
+}
+.cap a:hover { background: rgba(255, 255, 255, .18); }
+.ctrl { display: flex; align-items: center; gap: .8rem; margin-top: 1rem; }
+.dots { display: flex; gap: .5rem; flex: 1; min-width: 0; }
+.dots button {
+  flex: 1; height: 4px; max-width: 3.2rem; padding: 0; border: 0; border-radius: 4px; background: var(--line); position: relative; overflow: hidden;
+}
+.dots button::after { content: ""; position: absolute; inset: 0; background: var(--mavi); transform: scaleX(0); transform-origin: left; }
+.dots button.on::after, .dots button.done::after { transform: scaleX(1); }
+.dots button.on.run::after { transform: scaleX(0); }
+.dots button.on.run::after { animation: fill var(--dur, 5.5s) linear forwards; }
+@keyframes fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.arrows { display: flex; gap: .4rem; }
+.arrows button {
+  width: 2.5rem; height: 2.5rem; border-radius: 50%; border: 1.5px solid var(--line); background: var(--surface);
+  display: grid; place-items: center; font-size: 1.1rem; line-height: 1;
+}
+.arrows button:hover { border-color: var(--mavi); color: var(--mavi); }
+
+/* bead divider */
+.beads {
+  height: 14px; margin-block: 0;
+  background:
+    radial-gradient(circle at 7px 7px, var(--gold) 0 4.5px, transparent 5px) 0 0 / 56px 14px repeat-x,
+    radial-gradient(circle at 7px 7px, var(--mavi) 0 5.5px, transparent 6px) 14px 0 / 56px 14px repeat-x,
+    radial-gradient(circle at 7px 7px, var(--plum) 0 4.5px, transparent 5px) 28px 0 / 56px 14px repeat-x,
+    radial-gradient(circle at 7px 7px, var(--line) 0 3.5px, transparent 4px) 42px 0 / 56px 14px repeat-x;
+  opacity: .9;
+}
+
+/* collection */
+.collection { padding-block: 3.5rem 4rem; }
+.sec-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 1.25rem 2rem; margin-bottom: 2rem; }
+.sec-head h2 { font-size: clamp(2rem, 5vw, 3rem); letter-spacing: -.02em; }
+.tabs { display: flex; flex-wrap: wrap; gap: .5rem; }
+.tabs button {
+  display: inline-flex; align-items: baseline; gap: .45rem; padding: .5rem 1.05rem; border-radius: 99px;
+  border: 1.5px solid var(--line); background: transparent; font-weight: 600;
+}
+.tabs button small { font-size: .75rem; font-weight: 500; color: var(--muted); font-variant-numeric: tabular-nums; }
+.tabs button:hover { border-color: var(--mavi); }
+.tabs button[aria-pressed="true"] { background: var(--mavi); border-color: var(--mavi); color: var(--on-mavi); }
+.tabs button[aria-pressed="true"] small { color: inherit; opacity: .8; }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 15.5rem), 1fr)); gap: 1.75rem 1.5rem; }
+.card { min-width: 0; display: flex; flex-direction: column; gap: .9rem; }
+.card .ph {
+  position: relative; display: block; width: 100%; padding: 0; border: 0; overflow: hidden; border-radius: 1rem;
+  aspect-ratio: 4 / 5; background: var(--surface);
+}
+.card .ph img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .6s ease; }
+.card .ph:hover img { transform: scale(1.05); }
+.card .tag {
+  position: absolute; left: .7rem; top: .7rem; padding: .2rem .65rem; border-radius: 99px;
+  background: var(--surface); color: var(--ink); font-size: .72rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase;
+}
+.card h3 { font-size: 1.3rem; }
+.card .desc { color: var(--muted); font-size: .95rem; }
+.card .row { display: flex; align-items: center; justify-content: space-between; gap: .75rem; margin-top: auto; flex-wrap: wrap; }
+.price { font-weight: 600; font-variant-numeric: tabular-nums; }
+.price.ask { color: var(--muted); font-weight: 500; font-size: .92rem; }
+.card .btn { padding: .5rem 1.05rem; font-size: .9rem; }
+
+.empty {
+  grid-column: 1 / -1; padding: 3rem 1.5rem; border: 1.5px dashed var(--line); border-radius: 1rem; text-align: center;
+  display: grid; gap: .6rem; justify-items: center; background: var(--surface);
+}
+.empty h3 { font-size: 1.6rem; }
+.empty p { color: var(--muted); max-width: 28rem; }
+.empty .beads { width: 7rem; margin-bottom: .4rem; }
+
+/* about */
+.about { padding-block: 3.5rem; display: grid; gap: 2rem; grid-template-columns: 1fr; }
+@media (min-width: 52rem) { .about { grid-template-columns: minmax(0, 4fr) minmax(0, 7fr); gap: 4rem; } }
+.about h2 { font-size: clamp(2rem, 5vw, 3rem); letter-spacing: -.02em; }
+.facts { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); }
+.facts div { border-top: 2px solid var(--ink); padding-top: .9rem; min-width: 0; }
+.facts b { font-family: var(--font-display); font-weight: 500; font-size: 1.25rem; display: block; margin-bottom: .35rem; }
+.facts p { color: var(--muted); font-size: .96rem; }
+
+/* contact */
+.contact { padding-block: 3.5rem 4rem; }
+.contact .box {
+  background: var(--ink); color: var(--bg); border-radius: 1.5rem; padding: clamp(1.75rem, 5vw, 3.5rem);
+  display: grid; gap: 1.5rem; grid-template-columns: 1fr; align-items: center;
+}
+@media (min-width: 52rem) { .contact .box { grid-template-columns: minmax(0, 1fr) auto; } }
+.contact h2 { font-size: clamp(1.9rem, 4.5vw, 2.8rem); letter-spacing: -.02em; }
+.contact p { margin-top: .8rem; opacity: .8; max-width: 32rem; }
+.contact .info { display: grid; gap: .5rem; margin-top: 1.2rem; font-variant-numeric: tabular-nums; }
+.contact .info span { opacity: .65; font-size: .85rem; letter-spacing: .08em; text-transform: uppercase; margin-right: .6rem; }
+.contact .btn { background: var(--bg); color: var(--ink); border-color: var(--bg); }
+
+footer { border-top: 1px solid var(--line); padding-block: 1.5rem 2rem; color: var(--muted); font-size: .9rem; }
+footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem 2rem; }
+
+/* viewer */
+.viewer { position: fixed; inset: 0; z-index: 40; background: rgba(8, 14, 24, .8); display: grid; place-items: center; padding: 1rem; overflow-y: auto; }
+.viewer .sheet {
+  background: var(--bg); border-radius: 1.25rem; width: min(100%, 60rem); max-height: 100%; overflow: auto;
+  display: grid; grid-template-columns: 1fr; position: relative;
+}
+@media (min-width: 46rem) { .viewer .sheet { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); } }
+.viewer img { width: 100%; height: 100%; max-height: 80vh; object-fit: cover; display: block; aspect-ratio: 1 / 1; }
+.viewer .txt { padding: 2rem 1.75rem; display: flex; flex-direction: column; gap: 1rem; justify-content: center; min-width: 0; }
+.viewer h3 { font-size: 2rem; letter-spacing: -.01em; }
+.viewer .desc { color: var(--muted); }
+.viewer .x {
+  position: absolute; right: .7rem; top: .7rem; width: 2.5rem; height: 2.5rem; border-radius: 50%; border: 0;
+  background: var(--surface); color: var(--ink); font-size: 1.3rem; line-height: 1; z-index: 2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .slide, .slide img, .card .ph img { transition: none; }
+  .dots button.on.run::after { animation: none; transform: scaleX(1); }
+}
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <a class="mark" href="#top" id="top">mavis<i>taki</i></a>
+    <nav class="nav" id="nav" aria-label="Kategoriler"></nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero" aria-label="Tanıtım">
+    <div>
+      <p class="eyebrow">Eskişehir · El yapımı takı</p>
+      <h1>Hepsi <em>elde</em> dizildi.</h1>
+      <p class="lead">Kolye, bileklik ve daha fazlası. Her parça boncuk boncuk, tek tek elde hazırlanır.</p>
+      <div class="actions">
+        <a class="btn" href="#koleksiyon">Koleksiyona bak</a>
+        <a class="btn ghost" id="igLink" href="https://www.instagram.com/mavistaki/" target="_blank" rel="noopener">Instagram'da takip et</a>
+      </div>
+    </div>
+    <div class="slider" id="slider" role="region" aria-roledescription="galeri" aria-label="Öne çıkan ürünler">
+      <div class="frame" id="frame" aria-live="off"></div>
+      <div class="ctrl">
+        <div class="dots" id="dots"></div>
+        <div class="arrows">
+          <button type="button" id="prev" aria-label="Önceki ürün">&larr;</button>
+          <button type="button" id="next" aria-label="Sonraki ürün">&rarr;</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="beads" role="presentation"></div>
+
+<main class="wrap">
+  <section class="collection" id="koleksiyon" aria-labelledby="kt">
+    <div class="sec-head">
+      <h2 id="kt">Koleksiyon</h2>
+      <div class="tabs" id="tabs" role="group" aria-label="Ürün kategorisi"></div>
+    </div>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <section class="about" aria-labelledby="at">
+    <h2 id="at">Tezgâhtan size</h2>
+    <div class="facts">
+      <div><b>Elde dizilir</b><p>Her takı tek tek, elde hazırlanır. Aynı modelin iki parçası birebir aynı olmayabilir.</p></div>
+      <div><b>Kristal, ahşap, cam</b><p>Kristal ve cam boncuklar, ahşap tanelerle altın rengi ara parçalar bir arada kullanılır.</p></div>
+      <div><b>Yeni bölümler yolda</b><p>Küpe ve şal modelleri koleksiyona eklenecek. Takipte kalın.</p></div>
+    </div>
+  </section>
+
+  <section class="contact" id="iletisim" aria-labelledby="ct">
+    <div class="box">
+      <div>
+        <h2 id="ct">Beğendiğiniz parçayı yazın.</h2>
+        <p>Fiyat, renk ve sipariş için mesaj atmanız yeterli.</p>
+        <div class="info" id="info"></div>
+      </div>
+      <a class="btn" id="contactBtn" href="https://www.instagram.com/mavistaki/" target="_blank" rel="noopener">Mesaj gönder</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap"><span>© mavistaki · Eskişehir</span><span>Tüm ürünler el yapımıdır.</span></div>
+</footer>
+
+<div class="viewer" id="viewer" hidden role="dialog" aria-modal="true" aria-label="Ürün detayı"></div>
+
+<script>
+/* ---------------------------------------------------------------
+   AYARLAR — iletişim bilgilerini buraya yazın
+   whatsapp: ülke koduyla, boşluksuz. Örnek: "905551112233"
+   --------------------------------------------------------------- */
+const CONFIG = {
+  instagram: "mavistaki",
+  whatsapp: "",
+  telefon: "",
+  eposta: ""
+};
+
+/* Kategoriler. Yeni kategori için bir satır ekleyin. */
+const CATEGORIES = [
+  { id: "kolye", label: "Kolye" },
+  { id: "bileklik", label: "Bileklik" },
+  { id: "kupe", label: "Küpe" },
+  { id: "sal", label: "Şal" }
+];
+
+/* Ürünler. Yeni ürün için bir blok ekleyin.
+   cat: kategori id'si · price: sayı (örn. 350) ya da null · hero: true ise üst galeride de görünür */
+const PRODUCTS = [
+  {
+    id: "kolye-serisi", cat: "kolye", hero: true,
+    name: "Kristal Kolye Serisi",
+    desc: "Mor, yeşil ve krem tonlarında kristal boncuklar. Kalp, ay ve kelebek uçlu farklı modeller.",
+    price: null, img: "img/kolye-serisi.jpg", pos: "50% 50%"
+  },
+  {
+    id: "spiral-bileklik", cat: "bileklik", hero: true,
+    name: "Kahve Altın Spiral Bileklik",
+    desc: "Kahve, altın ve pembe boncukların birkaç tur sarıldığı çoklu spiral bileklik.",
+    price: null, img: "img/spiral-bileklik.jpg", pos: "50% 55%"
+  },
+  {
+    id: "mor-kolye", cat: "kolye", hero: true,
+    name: "Mor Kristal Kalp Kolye",
+    desc: "Mor ve şeffaf kristaller, altın rengi ara boncuklar ve pembe kalp uç. Ayarlanabilir zincirli.",
+    price: null, img: "img/mor-kolye.jpg", pos: "50% 60%"
+  },
+  {
+    id: "ahsap-bileklik", cat: "bileklik", hero: true,
+    name: "Ahşap Turkuaz Bileklik",
+    desc: "Ahşap, beyaz, turkuaz ve kırmızı boncukların bir araya geldiği çok sıralı bileklik.",
+    price: null, img: "img/ahsap-bileklik.jpg", pos: "50% 55%"
+  },
+  {
+    id: "kahve-kolye", cat: "kolye", hero: true,
+    name: "Kahve Kristal Kalp Kolye",
+    desc: "Kahve ve pembe kristal boncuklar, altın rengi ara parçalar ve açık renk kalp uç. Ayarlanabilir zincirli.",
+    price: null, img: "img/kahve-kolye.jpg", pos: "50% 60%"
+  }
+];
+
+/* ------------------------------ kod ------------------------------ */
+const $ = (s) => document.querySelector(s);
+const catLabel = (id) => (CATEGORIES.find((c) => c.id === id) || {}).label || "";
+const igUrl = "https://www.instagram.com/" + CONFIG.instagram + "/";
+let current = "all";
+
+function orderUrl(p) {
+  if (CONFIG.whatsapp) {
+    const t = p ? "Merhaba, " + p.name + " hakkında bilgi almak istiyorum." : "Merhaba, bilgi almak istiyorum.";
+    return "https://wa.me/" + CONFIG.whatsapp.replace(/\D/g, "") + "?text=" + encodeURIComponent(t);
+  }
+  return igUrl;
+}
+const orderLabel = () => (CONFIG.whatsapp ? "WhatsApp'tan sor" : "Instagram'dan sor");
+function priceHtml(p) {
+  return typeof p.price === "number"
+    ? '<span class="price">' + p.price.toLocaleString("tr-TR") + " ₺</span>"
+    : '<span class="price ask">Fiyat için yazın</span>';
+}
+function esc(s) { return String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+
+/* nav + tabs */
+function renderNav() {
+  $("#nav").innerHTML = CATEGORIES.map((c) => '<button type="button" data-cat="' + c.id + '">' + c.label + "</button>").join("");
+  const all = [{ id: "all", label: "Tümü" }].concat(CATEGORIES);
+  $("#tabs").innerHTML = all.map((c) => {
+    const n = c.id === "all" ? PRODUCTS.length : PRODUCTS.filter((p) => p.cat === c.id).length;
+    return '<button type="button" data-cat="' + c.id + '" aria-pressed="' + (c.id === current) + '">' + c.label + " <small>" + n + "</small></button>";
+  }).join("");
+}
+function setCat(id, scroll) {
+  current = id;
+  renderNav(); renderGrid();
+  if (scroll) $("#koleksiyon").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+}
+document.addEventListener("click", (e) => {
+  const b = e.target.closest("[data-cat]");
+  if (b) setCat(b.dataset.cat, !b.closest("#tabs"));
+});
+
+/* grid */
+function renderGrid() {
+  const list = current === "all" ? PRODUCTS : PRODUCTS.filter((p) => p.cat === current);
+  if (!list.length) {
+    const name = catLabel(current).toLowerCase();
+    $("#grid").innerHTML =
+      '<div class="empty"><div class="beads" role="presentation"></div><h3>' + esc(catLabel(current)) + ' modelleri yakında</h3>' +
+      "<p>Bu bölüme yeni parçalar eklenecek. " + name + " için şimdiden yazabilirsiniz.</p>" +
+      '<a class="btn ghost" href="' + orderUrl() + '" target="_blank" rel="noopener">' + orderLabel() + "</a></div>";
+    return;
+  }
+  $("#grid").innerHTML = list.map((p) =>
+    '<article class="card">' +
+    '<button type="button" class="ph" data-open="' + p.id + '" aria-label="' + esc(p.name) + ' detayını aç">' +
+    '<img src="' + p.img + '" alt="' + esc(p.name) + '" loading="lazy" style="object-position:' + (p.pos || "50% 50%") + '">' +
+    '<span class="tag">' + esc(catLabel(p.cat)) + "</span></button>" +
+    "<h3>" + esc(p.name) + "</h3>" +
+    '<p class="desc">' + esc(p.desc) + "</p>" +
+    '<div class="row">' + priceHtml(p) +
+    '<a class="btn" href="' + orderUrl(p) + '" target="_blank" rel="noopener">' + orderLabel() + "</a></div></article>"
+  ).join("");
+}
+
+/* viewer */
+function openViewer(id) {
+  const p = PRODUCTS.find((x) => x.id === id); if (!p) return;
+  const v = $("#viewer");
+  v.innerHTML =
+    '<div class="sheet"><button type="button" class="x" aria-label="Kapat" data-close>&times;</button>' +
+    '<img src="' + p.img + '" alt="' + esc(p.name) + '" style="object-position:' + (p.pos || "50% 50%") + '">' +
+    '<div class="txt"><span class="eyebrow">' + esc(catLabel(p.cat)) + " · El yapımı</span>" +
+    "<h3>" + esc(p.name) + '</h3><p class="desc">' + esc(p.desc) + "</p>" + priceHtml(p) +
+    '<a class="btn" href="' + orderUrl(p) + '" target="_blank" rel="noopener">' + orderLabel() + "</a></div></div>";
+  v.hidden = false; v.dataset.last = document.activeElement && document.activeElement.dataset ? (document.activeElement.dataset.open || "") : "";
+  v.querySelector(".x").focus();
+}
+function closeViewer() {
+  const v = $("#viewer"); if (v.hidden) return;
+  v.hidden = true; v.innerHTML = "";
+  const last = v.dataset.last && document.querySelector('[data-open="' + v.dataset.last + '"]');
+  if (last) last.focus();
+}
+document.addEventListener("click", (e) => {
+  const o = e.target.closest("[data-open]");
+  if (o) { openViewer(o.dataset.open); return; }
+  if (e.target.closest("[data-close]") || e.target === $("#viewer")) closeViewer();
+});
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeViewer(); });
+
+/* hero slider */
+const slides = PRODUCTS.filter((p) => p.hero);
+const DUR = 5500;
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+let idx = 0, timer = null, paused = false;
+
+function buildSlider() {
+  $("#frame").innerHTML = slides.map((p, i) =>
+    '<figure class="slide' + (i === 0 ? " on" : "") + '" style="margin:0" aria-hidden="' + (i !== 0) + '">' +
+    '<img src="' + p.img + '" alt="' + esc(p.name) + '" style="object-position:' + (p.pos || "50% 50%") + '"' + (i === 0 ? "" : ' loading="lazy"') + ">" +
+    '<figcaption class="cap"><div><span>' + esc(catLabel(p.cat)) + "</span><b>" + esc(p.name) + "</b></div>" +
+    '<a href="#koleksiyon" data-pick="' + p.id + '">İncele</a></figcaption></figure>'
+  ).join("");
+  $("#dots").innerHTML = slides.map((p, i) => '<button type="button" aria-label="' + (i + 1) + ". ürün: " + esc(p.name) + '" data-go="' + i + '"></button>').join("");
+  go(0, true);
+}
+function go(n, first) {
+  idx = (n + slides.length) % slides.length;
+  document.querySelectorAll(".slide").forEach((s, i) => { s.classList.toggle("on", i === idx); s.setAttribute("aria-hidden", i !== idx); });
+  document.querySelectorAll("#dots button").forEach((d, i) => {
+    d.classList.remove("run");
+    d.classList.toggle("on", i === idx);
+    d.classList.toggle("done", i < idx);
+  });
+  const cur = document.querySelectorAll("#dots button")[idx];
+  if (cur && !reduce && !paused) { void cur.offsetWidth; cur.classList.add("run"); cur.style.setProperty("--dur", DUR + "ms"); }
+  restart();
+}
+function restart() {
+  clearTimeout(timer);
+  if (reduce || paused || slides.length < 2) return;
+  timer = setTimeout(() => go(idx + 1), DUR);
+}
+function setPaused(v) {
+  paused = v;
+  if (v) { clearTimeout(timer); document.querySelectorAll("#dots button.run").forEach((d) => d.classList.remove("run")); }
+  else go(idx);
+}
+const sl = $("#slider");
+sl.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse") setPaused(true); });
+sl.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse") setPaused(false); });
+sl.addEventListener("focusin", () => setPaused(true));
+sl.addEventListener("focusout", () => setPaused(false));
+document.addEventListener("visibilitychange", () => { if (document.hidden) setPaused(true); else if (!sl.matches(":hover")) setPaused(false); });
+$("#prev").addEventListener("click", () => go(idx - 1));
+$("#next").addEventListener("click", () => go(idx + 1));
+$("#dots").addEventListener("click", (e) => { const b = e.target.closest("[data-go]"); if (b) go(+b.dataset.go); });
+$("#frame").addEventListener("click", (e) => {
+  const a = e.target.closest("[data-pick]");
+  if (a) { e.preventDefault(); const p = PRODUCTS.find((x) => x.id === a.dataset.pick); setCat(p.cat, true); }
+});
+let sx = null;
+$("#frame").addEventListener("pointerdown", (e) => { sx = e.clientX; });
+$("#frame").addEventListener("pointerup", (e) => {
+  if (sx === null) return;
+  const dx = e.clientX - sx; sx = null;
+  if (Math.abs(dx) > 40) go(idx + (dx < 0 ? 1 : -1));
+});
+
+/* iletişim bloğu */
+function renderContact() {
+  const rows = [];
+  rows.push('<div><span>Instagram</span><a href="' + igUrl + '" target="_blank" rel="noopener">@' + esc(CONFIG.instagram) + "</a></div>");
+  if (CONFIG.whatsapp) rows.push("<div><span>WhatsApp</span>" + esc(CONFIG.whatsapp) + "</div>");
+  if (CONFIG.telefon) rows.push("<div><span>Telefon</span>" + esc(CONFIG.telefon) + "</div>");
+  if (CONFIG.eposta) rows.push("<div><span>E-posta</span>" + esc(CONFIG.eposta) + "</div>");
+  $("#info").innerHTML = rows.join("");
+  const b = $("#contactBtn"); b.href = orderUrl(); b.textContent = CONFIG.whatsapp ? "WhatsApp'tan yaz" : "Instagram'dan yaz";
+  $("#igLink").href = igUrl;
+}
+
+renderNav(); renderGrid(); buildSlider(); renderContact();
+</script>
